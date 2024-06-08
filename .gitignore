@@ -1,0 +1,4 @@
+# Ignore all the build folder and files
+build
+
+main
