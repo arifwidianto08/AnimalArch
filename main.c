@@ -5,6 +5,7 @@
 
 #define RESET "\033[0m"              // Resets the text formatting back to the default after printing the highlighted text.
 #define HIGHLIGHT "\033[46m\033[30m" // Bright cyan background with black text
+#define VISITED "\033[42m\033[30m"   // Bright green background with black text
 
 // Define the structure for a tree node
 typedef struct TreeNode
@@ -12,6 +13,7 @@ typedef struct TreeNode
     char name[50];
     struct TreeNode *firstChild;
     struct TreeNode *nextSibling;
+    int visited; // Field to mark if the node has been visited
 } TreeNode;
 
 // Function to create a new tree node
@@ -21,6 +23,7 @@ TreeNode *createNode(const char *name)
     strcpy(newNode->name, name);
     newNode->firstChild = NULL;
     newNode->nextSibling = NULL;
+    newNode->visited = 0; // Initialize visited to 0 (false)
     return newNode;
 }
 
@@ -54,8 +57,18 @@ void addChild(TreeNode *parent, TreeNode *child)
     }
 }
 
+// Function to reset the visited field of all nodes in the tree
+void resetVisited(TreeNode *root)
+{
+    if (root == NULL)
+        return;
+    root->visited = 0;               // Reset visited field of current node
+    resetVisited(root->firstChild);  // Recursively reset visited field of children
+    resetVisited(root->nextSibling); // Recursively reset visited field of siblings
+}
+
 // Function to print the tree structure with a cursor on a specific node
-void printTree(TreeNode *root, int level, TreeNode *cursor)
+void printTree(TreeNode *root, int level, TreeNode *cursor, const char *markedLabel)
 {
     if (root == NULL)
         return;
@@ -76,6 +89,10 @@ void printTree(TreeNode *root, int level, TreeNode *cursor)
     {
         printf(HIGHLIGHT "%s" RESET "\n", root->name);
     }
+    else if (root->visited)
+    {
+        printf("%s ✅\n", root->name);
+    }
     else
     {
         printf("%s\n", root->name);
@@ -84,12 +101,12 @@ void printTree(TreeNode *root, int level, TreeNode *cursor)
     TreeNode *child = root->firstChild;
     while (child != NULL)
     {
-        printTree(child, level + 1, cursor);
+        printTree(child, level + 1, cursor, markedLabel);
         child = child->nextSibling;
     }
 }
 
-// Function to perform pre-order traversal and move the cursor
+// Function to perform pre-order traversal and mark visited nodes
 void preOrderTraversal(TreeNode *root)
 {
     if (root == NULL)
@@ -102,9 +119,12 @@ void preOrderTraversal(TreeNode *root)
     while (1)
     {
         // Print the tree with the current cursor
-        clearScreen(); // Clear the screen
-        printTree(root, 0, cursor);
-        suspense(0.5); // Wait for 500 milliseconds
+        clearScreen();                  // Clear the screen
+        printTree(root, 0, cursor, ""); // No marked node initially
+        suspense(0.5);                  // Wait for 500 milliseconds
+
+        // Mark the current node as visited
+        cursor->visited = 1;
 
         // Push the cursor's first child to the stack if it exists
         if (cursor->firstChild != NULL)
@@ -133,7 +153,7 @@ void preOrderTraversal(TreeNode *root)
     }
 }
 
-// Function to perform in-order traversal and move the cursor
+// Function to perform in-order traversal and mark visited nodes
 void inOrderTraversal(TreeNode *root)
 {
     if (root == NULL)
@@ -153,15 +173,16 @@ void inOrderTraversal(TreeNode *root)
         else
         {
             cursor = stack[--stackSize];
-            clearScreen(); // Clear the screen
-            printTree(root, 0, cursor);
-            suspense(0.5); // Wait for 500 milliseconds
+            cursor->visited = 1;            // Mark the current node as visited
+            clearScreen();                  // Clear the screen
+            printTree(root, 0, cursor, ""); // No marked node initially
+            suspense(0.5);                  // Wait for 500 milliseconds
             cursor = cursor->nextSibling;
         }
     }
 }
 
-// Function to perform post-order traversal and move the cursor
+// Function to perform post-order traversal and mark visited nodes
 void postOrderTraversal(TreeNode *root)
 {
     if (root == NULL)
@@ -188,10 +209,13 @@ void postOrderTraversal(TreeNode *root)
             }
             else
             {
-                clearScreen(); // Clear the screen
-                printTree(root, 0, peekNode);
-                suspense(0.5); // Wait for 500 milliseconds
-                lastVisited = stack[--stackSize];
+                cursor = stack[--stackSize];
+                cursor->visited = 1;            // Mark the current node as visited
+                clearScreen();                  // Clear the screen
+                printTree(root, 0, cursor, ""); // No marked node initially
+                suspense(0.5);                  // Wait for 500 milliseconds
+                lastVisited = cursor;
+                cursor = NULL;
             }
         }
     }
@@ -212,7 +236,11 @@ void runningTraversalMethod(TreeNode *root, void (*traversalMethod)(TreeNode *),
     printf("Running %s traversal...\n\n", name);
     suspense(2);
 
+    // Run the traversal method
     traversalMethod(root);
+
+    // Reset visited field of all nodes after traversal
+    resetVisited(root);
 
     printf("\nFinished...\n");
     suspense(3);
@@ -282,7 +310,7 @@ int main()
     // Print the tree structure
     printf("Printing the Tree Structure...\n\n");
     suspense(1);
-    printTree(root, 0, NULL);
+    printTree(root, 0, NULL, "");
 
     printf("\nNext: Pre-Order Traversal \n\n");
     suspense(5);
