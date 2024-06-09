@@ -150,8 +150,16 @@ void postOrderTraversal(TreeNode *root)
 {
     if (root == NULL)
         return;
-    postOrderTraversal(root->firstChild);
-    postOrderTraversal(root->nextSibling);
+
+    // Recursively visit all child nodes
+    TreeNode *child = root->firstChild;
+    while (child != NULL)
+    {
+        postOrderTraversal(child);
+        child = child->nextSibling;
+    }
+
+    // Visit the root node
     printf("%s\n", root->name);
 }
 
