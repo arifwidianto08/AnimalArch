@@ -216,7 +216,7 @@ void preOrderTraversal(TreeNode *root)
         printf("Running pre-order traversal...\n\n"); // Print the traversal method
 
         printTree(root, 0, cursor, ""); // No marked node initially
-        suspense(0.5);                  // Wait for 500 milliseconds
+        suspense(0.25);                 // Wait for 0.25 seconds
 
         // Mark the current node as visited
         cursor->visited = 1;
@@ -248,33 +248,31 @@ void preOrderTraversal(TreeNode *root)
     }
 }
 
-// Function to perform in-order traversal and mark visited nodes
+// Function for in-order traversal
 void inOrderTraversal(TreeNode *root)
 {
     if (root == NULL)
         return;
 
-    TreeNode *stack[100]; // Assume a maximum depth of 100 for simplicity
-    TreeNode *cursor = root;
-    int stackSize = 0;
+    TreeNode *child = root->firstChild;
 
-    while (stackSize > 0 || cursor != NULL)
+    // Visit the left children
+    if (child != NULL)
     {
-        if (cursor != NULL)
-        {
-            stack[stackSize++] = cursor;
-            cursor = cursor->firstChild;
-        }
-        else
-        {
-            cursor = stack[--stackSize];
-            cursor->visited = 1;                         // Mark the current node as visited
-            clearScreen();                               // Clear the screen
-            printf("Running in-order traversal...\n\n"); // Print the traversal method
+        inOrderTraversal(child);
+    }
 
-            printTree(root, 0, cursor, ""); // No marked node initially
-            suspense(0.5);                  // Wait for 500 milliseconds
-            cursor = cursor->nextSibling;
+    // Visit the root node
+    printf("%s\n", root->name);
+
+    // Visit the remaining siblings of the first child
+    if (child != NULL)
+    {
+        child = child->nextSibling;
+        while (child != NULL)
+        {
+            inOrderTraversal(child);
+            child = child->nextSibling;
         }
     }
 }
@@ -319,7 +317,7 @@ void postOrderTraversal(TreeNode *root)
         printf("Running post-order traversal...\n\n"); // Print the traversal method
 
         printTree(root, 0, node, ""); // No marked node initially
-        suspense(0.5);                // Wait for 500 milliseconds
+        suspense(0.25);               // Wait for 0.25 seconds
     }
 }
 // Function to free the memory allocated for the tree
@@ -406,6 +404,7 @@ int main()
     addChild(arachnida, araneae);
     addChild(arachnida, scorpiones);
 
+    // Clear the screen
     clearScreen();
 
     // Print the tree structure
@@ -414,24 +413,24 @@ int main()
     printTree(root, 0, NULL, "");
 
     printf("\nNext: Pre-Order Traversal \n\n");
-    suspense(5);
+    suspense(3);
     clearScreen();
 
     // Traverse the tree with cursor highlighting
     runningTraversalMethod(root, preOrderTraversal);
-    suspense(5);
+    suspense(3);
     printf("\nNext: Post-Order Traversal n\n");
     clearScreen();
 
     // Traverse the tree with cursor highlighting
     runningTraversalMethod(root, postOrderTraversal);
-    suspense(5);
+    suspense(3);
     clearScreen();
 
     // Traverse the tree with cursor highlighting
     runningTraversalMethod(root, inOrderTraversal);
     printf("\nNext: nothing. Close the program \n");
-    suspense(5);
+    suspense(3);
     clearScreen();
 
     // Generate a random name from the tree
@@ -441,7 +440,7 @@ int main()
     printf("Random Name: %s\n", randomName);
 
     // Search for a specific node
-    TreeNode *searchResult = search(root, "Mammalia");
+    TreeNode *searchResult = search(root, randomName);
     if (searchResult != NULL)
     {
         printf("\nSearch Result:\n");
