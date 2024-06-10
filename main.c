@@ -419,7 +419,7 @@ int main()
     // Traverse the tree with cursor highlighting
     runningTraversalMethod(root, preOrderTraversal);
     suspense(3);
-    printf("\nNext: Post-Order Traversal n\n");
+    printf("\nNext: Post-Order Traversal \n");
     clearScreen();
 
     // Traverse the tree with cursor highlighting
