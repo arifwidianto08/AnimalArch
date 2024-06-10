@@ -177,7 +177,8 @@ void printTree(TreeNode *root, int level, TreeNode *cursor, const char *markedLa
 
     if (root == cursor)
     {
-        printf(HIGHLIGHT "%s" RESET "\n", root->name);
+        printf(HIGHLIGHT "%s ( Scientific Name: %s, Common Name: %s, Classification: %s, Habitat: %s ) ✅\n" RESET,
+               root->name, root->scientificName, root->commonName, root->classification, root->habitat);
     }
     else if (root->visited)
     {
@@ -284,39 +285,41 @@ void postOrderTraversal(TreeNode *root)
     if (root == NULL)
         return;
 
-    TreeNode *stack[100]; // Assume a maximum depth of 100 for simplicity
-    TreeNode *lastVisited = NULL;
-    TreeNode *cursor = root;
-    int stackSize = 0;
+    TreeNode *stack1[100]; // Assume a maximum depth of 100 for simplicity
+    TreeNode *stack2[100]; // Auxiliary stack for post-order traversal
+    int stack1Size = 0, stack2Size = 0;
 
-    while (stackSize > 0 || cursor != NULL)
+    // Push the root to the first stack
+    stack1[stack1Size++] = root;
+
+    while (stack1Size > 0)
     {
-        if (cursor != NULL)
-        {
-            stack[stackSize++] = cursor;
-            cursor = cursor->firstChild;
-        }
-        else
-        {
-            TreeNode *peekNode = stack[stackSize - 1];
-            if (peekNode->nextSibling != NULL && lastVisited != peekNode->nextSibling)
-            {
-                cursor = peekNode->nextSibling;
-            }
-            else
-            {
-                cursor = stack[--stackSize];
-                cursor->visited = 1; // Mark the current node as visited
+        // Pop a node from the first stack and push it to the second stack
+        TreeNode *node = stack1[--stack1Size];
+        stack2[stack2Size++] = node;
 
-                clearScreen();                                 // Clear the screen
-                printf("Running post-order traversal...\n\n"); // Print the traversal method
-
-                printTree(root, 0, cursor, ""); // No marked node initially
-                suspense(0.5);                  // Wait for 500 milliseconds
-                lastVisited = cursor;
-                cursor = NULL;
+        // Push the left and right children of the popped node to the first stack
+        if (node->firstChild != NULL)
+        {
+            TreeNode *child = node->firstChild;
+            while (child != NULL)
+            {
+                stack1[stack1Size++] = child;
+                child = child->nextSibling;
             }
         }
+    }
+
+    // Process all nodes in the second stack
+    while (stack2Size > 0)
+    {
+        TreeNode *node = stack2[--stack2Size];
+        node->visited = 1;                             // Mark the current node as visited
+        clearScreen();                                 // Clear the screen
+        printf("Running post-order traversal...\n\n"); // Print the traversal method
+
+        printTree(root, 0, node, ""); // No marked node initially
+        suspense(0.5);                // Wait for 500 milliseconds
     }
 }
 // Function to free the memory allocated for the tree
